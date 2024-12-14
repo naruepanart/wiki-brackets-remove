@@ -9,34 +9,34 @@ import (
 )
 
 func main() {
-	// Use Glob to find all .txt files in the current directory.
+	// Get all .txt files in the current directory
 	files, err := filepath.Glob("*.txt")
 	if err != nil {
-		log.Fatalf("Failed to list files: %v", err)
+		log.Fatalf("Err listing files: %v", err)
 	}
 
-	// Compile the regular expression once to avoid re-compiling in the loop.
+	// Compile the regular expression pattern
 	re := regexp.MustCompile(`\[\d+\]`)
 
-	for _, file := range files {
-		// Read file in one go to avoid repeated I/O calls
-		input, err := os.ReadFile(file)
+	for _, f := range files {
+		// Read the file into memory
+		data, err := os.ReadFile(f)
 		if err != nil {
-			log.Printf("Error reading file %s: %v", file, err)
-			continue // Log and continue on error
+			log.Printf("Err reading file %s: %v", f, err)
+			continue
 		}
 
-		// Perform regex replacement
-		cleaned := re.ReplaceAll(input, nil)
+		// Clean the data by replacing the pattern
+		clean := re.ReplaceAll(data, nil)
 
-		// Only write to file if the content has changed
-		if len(cleaned) != len(input) {
-			err = os.WriteFile(file, cleaned, 0644)
+		// Write back if the content has changed
+		if len(clean) != len(data) {
+			err = os.WriteFile(f, clean, 0644)
 			if err != nil {
-				log.Printf("Error writing file %s: %v", file, err)
-				continue // Log and continue on error
+				log.Printf("Err writing file %s: %v", f, err)
+				continue
 			}
-			fmt.Printf("Cleaned: %s\n", file)
+			fmt.Printf("Cleaned: %s\n", f)
 		}
 	}
 }
