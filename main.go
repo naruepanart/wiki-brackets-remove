@@ -9,19 +9,18 @@ import (
 )
 
 func main() {
-	// Get .txt files
+	// Guard clause: No .txt files found
 	fs, err := filepath.Glob("*.txt")
 	if err != nil {
 		log.Fatalf("Listing files error: %v", err)
 	}
 
-	// No .txt files found
 	if len(fs) == 0 {
-		log.Println("No .txt files")
+		log.Println("No .txt files found")
 		return
 	}
 
-	// Compile regex
+	// Compile the regex pattern once
 	re := regexp.MustCompile(`\[\d+\]`)
 
 	// Process each file
@@ -29,21 +28,25 @@ func main() {
 		// Read file
 		d, err := os.ReadFile(f)
 		if err != nil {
-			log.Printf("Read error: %v", err)
+			log.Printf("Error reading file %s: %v", f, err)
 			continue
 		}
 
 		// Clean data
 		c := re.ReplaceAll(d, nil)
 
-		// If changed, write back
-		if len(c) != len(d) {
-			err = os.WriteFile(f, c, 0644)
-			if err != nil {
-				log.Printf("Write error: %v", err)
-				continue
-			}
-			fmt.Printf("Cleaned: %s\n", f)
+		// Guard clause: Skip file if no change is needed
+		if len(c) == len(d) {
+			continue
 		}
+
+		// Write the cleaned data back to file
+		err = os.WriteFile(f, c, 0644)
+		if err != nil {
+			log.Printf("Error writing file %s: %v", f, err)
+			continue
+		}
+
+		fmt.Printf("Cleaned: %s\n", f)
 	}
 }
