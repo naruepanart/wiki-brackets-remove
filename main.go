@@ -9,44 +9,43 @@ import (
 )
 
 func main() {
-	// Guard clause: No .txt files found
-	fs, err := filepath.Glob("*.txt")
+	// Get .txt files
+	f, err := filepath.Glob("*.txt")
 	if err != nil {
 		log.Fatalf("Listing files error: %v", err)
 	}
 
-	if len(fs) == 0 {
-		log.Println("No .txt files found")
+	// Guard clause for no .txt files found
+	if len(f) == 0 {
+		log.Println("No .txt files found.")
 		return
 	}
 
-	// Compile the regex pattern once
-	re := regexp.MustCompile(`\[\d+\]`)
+	// Compile regex
+	r := regexp.MustCompile(`\[\d+\]`)
 
 	// Process each file
-	for _, f := range fs {
+	for _, p := range f {
 		// Read file
-		d, err := os.ReadFile(f)
+		d, err := os.ReadFile(p)
 		if err != nil {
-			log.Printf("Error reading file %s: %v", f, err)
+			log.Printf("Failed to read file %s: %v", p, err)
 			continue
 		}
 
 		// Clean data
-		c := re.ReplaceAll(d, nil)
+		c := r.ReplaceAll(d, nil)
 
-		// Guard clause: Skip file if no change is needed
+		// Guard clause for no changes in the file
 		if len(c) == len(d) {
 			continue
 		}
 
-		// Write the cleaned data back to file
-		err = os.WriteFile(f, c, 0644)
-		if err != nil {
-			log.Printf("Error writing file %s: %v", f, err)
+		// Write cleaned data back to file
+		if err := os.WriteFile(p, c, 0644); err != nil {
+			log.Printf("Failed to write to file %s: %v", p, err)
 			continue
 		}
-
-		fmt.Printf("Cleaned: %s\n", f)
+		fmt.Printf("Cleaned: %s\n", p)
 	}
 }
